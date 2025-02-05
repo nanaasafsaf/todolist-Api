@@ -42,6 +42,7 @@ class TaskController extends Controller
         // Simpan task ke database
         $task = Task::create([
             'title' => $request->title,
+            'urgent_level' => $request->urgent_level,
             'user_id' => $user_id,
         ]);
 
