@@ -11,4 +11,10 @@ class Task extends Model
     use HasFactory;
     // kolom selain id dapat di isi/diganti datanya
     protected $guarded = ['id'];
+
+    protected $with = ['user'];
+
+    public function  user() {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
 }

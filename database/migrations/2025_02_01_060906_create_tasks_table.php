@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('title');
+            $table->enum('urgent_level', ['low', 'medium', 'high'])->default('low');
             $table->boolean('completed')->default(false);
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Menambahkan relasi ke users table
             $table->timestamps();
         });
     }
