@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('title');
             $table->enum('urgent_level', ['low', 'medium', 'high'])->default('low');
-            $table->boolean('completed')->default(false);
+            $table->boolean('isCompleted')->default(false);
             $table->timestamps();
         });
     }

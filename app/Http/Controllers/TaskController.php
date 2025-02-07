@@ -25,7 +25,7 @@ class TaskController extends Controller
     {
         // Validasi input
         $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
+            'title' => 'required',
         ]);
 
         if ($validator->fails()) {
