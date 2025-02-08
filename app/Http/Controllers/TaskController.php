@@ -11,50 +11,57 @@ class TaskController extends Controller
 {
     /**
      * Menampilkan semua task yang terkait dengan user yang sedang login.
+     * Dapat difilter berdasarkan list_id jika diberikan.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $tasks = Task::where('user_id', Auth::id())->get();
-        return response()->json(['data' => $tasks, 'user' => Auth::user()], 200);
+        $user_id = Auth::id();
+        $query = Task::where('user_id', $user_id);
+
+        // Jika request memiliki list_id, tambahkan filter
+        if ($request->has('list_id')) {
+            $query->where('list_id', $request->list_id);
+        }
+
+        $tasks = $query->get();
+
+        return response()->json(['data' => $tasks], 200);
     }
 
     /**
-     * Menyimpan task baru.
+     * Menyimpan task baru dengan list_id.
      */
     public function store(Request $request)
     {
         // Validasi input
         $validator = Validator::make($request->all(), [
-            'title' => 'required',
+            'title' => 'required|string|max:255',
+            'list_id' => 'required|integer', // Pastikan list_id ada
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Ambil ID user yang sedang login
         $user_id = Auth::id();
-
-        if (!$user_id) {
-            return response()->json(['error' => 'User tidak terautentikasi'], 401);
-        }
 
         // Simpan task ke database
         $task = Task::create([
             'title' => $request->title,
-            'urgent_level' => $request->urgent_level,
+            'urgent_level' => $request->urgent_level ?? null,
             'user_id' => $user_id,
+            'list_id' => $request->list_id,
         ]);
 
         return response()->json(['message' => 'Tambah Tugas Berhasil', 'data' => $task], 201);
     }
 
     /**
-     * Menampilkan detail task tertentu.
+     * Menampilkan detail task tertentu berdasarkan list_id.
      */
     public function show(Task $task)
     {
-        // Pastikan task yang akan diakses adalah milik user yang sedang login
+        // Pastikan task milik user yang sedang login
         if ($task->user_id !== Auth::id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -67,21 +74,22 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
+        // Pastikan hanya pemilik task yang bisa mengupdate
+        if ($task->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         // Validasi input
         $validator = Validator::make($request->all(), [
             'title' => 'sometimes|required|string|max:255',
+            'list_id' => 'sometimes|required|integer',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Pastikan hanya pemilik task yang bisa mengupdate
-        if ($task->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        $task->update($request->all());
+        $task->update($request->only(['title', 'urgent_level', 'list_id']));
 
         return response()->json(['message' => 'Tugas berhasil diperbarui', 'data' => $task], 200);
     }
