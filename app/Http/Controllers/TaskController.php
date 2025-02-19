@@ -37,6 +37,7 @@ class TaskController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'list_id' => 'required|integer', // Pastikan list_id ada
+            'deadline' => 'nullable|date', // Validasi format tanggal
         ]);
 
         if ($validator->fails()) {
@@ -51,6 +52,7 @@ class TaskController extends Controller
             'urgent_level' => $request->urgent_level ?? null,
             'user_id' => $user_id,
             'list_id' => $request->list_id,
+            'deadline' => $request->deadline,
         ]);
 
         return response()->json(['message' => 'Tambah Tugas Berhasil', 'data' => $task], 201);
